@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>유치원 열매반 학급 경제 & 게이미피케이션 - 열매 빌리지</title>
+  <meta name="description" content="유치원 열매반을 위한 학급 화폐(열매 코인), 게이미피케이션 레벨업, 상점, 1인 1역 관리 웹 애플리케이션">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Canvas Confetti Library CDN for celebratory animations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Top Global Navigation Header -->
+    <header class="main-header">
+      <div class="header-brand">
+        <span class="brand-icon">🍇</span>
+        <h1 class="brand-title">열매반 빌리지</h1>
+        <span class="brand-badge">유치원 열매반</span>
+      </div>
+
+      <!-- Mode Switcher (Teacher Mode vs Student Mode) -->
+      <div class="mode-switcher-container">
+        <div class="mode-switch-bg">
+          <button id="btn-mode-student" class="mode-btn active" onclick="switchMode('student')">
+            <span>👧👦 학생 화면</span>
+          </button>
+          <button id="btn-mode-teacher" class="mode-btn" onclick="switchMode('teacher')">
+            <span>👩‍🏫 교사 화면</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Reset Button -->
+      <button class="btn-icon-secondary" onclick="confirmResetData()" title="데이터 초기화">
+        🔄 초기화
+      </button>
+    </header>
+
+    <!-- Student Selector Subheader (Visible in Student Mode) -->
+    <section id="student-selector-bar" class="student-selector-bar">
+      <span class="selector-label">👤 학생 선택:</span>
+      <div id="student-tabs" class="student-tabs">
+        <!-- JS will populate student buttons here -->
+      </div>
+    </section>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- ==================== STUDENT VIEW ==================== -->
+      <div id="view-student" class="view-section active">
+        
+        <!-- Student Hero Banner (Profile, Level, Coins) -->
+        <section class="student-hero-card">
+          <div class="student-avatar-wrap">
+            <div id="student-avatar" class="student-avatar">🍇</div>
+            <div id="student-level-badge" class="level-badge">Lv.1</div>
+          </div>
+
+          <div class="student-info-meta">
+            <h2 id="student-name" class="student-name">김열매</h2>
+            <div class="exp-bar-container">
+              <div class="exp-meta">
+                <span class="exp-title">⭐ 성장 경험치 (EXP)</span>
+                <span id="student-exp-text" class="exp-text">20 / 100 EXP</span>
+              </div>
+              <div class="exp-track">
+                <div id="student-exp-fill" class="exp-fill" style="width: 20%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="student-coin-card">
+            <span class="coin-label">내 열매 코인</span>
+            <div class="coin-value-wrap">
+              <span class="coin-icon">🍇</span>
+              <span id="student-coin-balance" class="coin-amount">15</span>
+              <span class="coin-unit">코인</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Student Dashboard Tabs (Today's Tasks & Fruit Store) -->
+        <div class="tab-navigation">
+          <button class="tab-btn active" onclick="switchStudentSubTab('tasks')">📋 오늘 할 일 & 1인 1역</button>
+          <button class="tab-btn" onclick="switchStudentSubTab('shop')">🛍️ 열매 상점</button>
+        </div>
+
+        <!-- Sub Tab 1: Tasks & Roles -->
+        <div id="student-subtab-tasks" class="subtab-content active">
+          <div class="grid-2col">
+            <!-- 1인 1역 Card -->
+            <div class="card role-card">
+              <div class="card-header">
+                <h3>👑 오늘의 1인 1역</h3>
+                <span class="badge badge-purple">학급 역할</span>
+              </div>
+              <div class="card-body">
+                <div class="role-display-box">
+                  <div id="student-role-icon" class="role-large-icon">🧹</div>
+                  <div class="role-details">
+                    <h4 id="student-role-title">칠판 도우미</h4>
+                    <p id="student-role-desc">자유놀이가 끝나고 칠판과 지우개를 깨끗이 정리해요!</p>
+                  </div>
+                </div>
+                <div class="role-action">
+                  <button id="btn-check-role" class="btn-large btn-success" onclick="toggleRoleComplete()">
+                    <span id="role-check-icon">✨</span> <span id="role-check-text">오늘 역할 완료했어요!</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 오늘의 미션 Card -->
+            <div class="card mission-card">
+              <div class="card-header">
+                <h3>🌟 오늘의 학급 미션</h3>
+                <span class="badge badge-yellow">코인 보상</span>
+              </div>
+              <div class="card-body">
+                <ul id="student-mission-list" class="mission-list">
+                  <!-- JS will render daily missions here -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub Tab 2: Shop -->
+        <div id="student-subtab-shop" class="subtab-content">
+          <div class="card shop-card">
+            <div class="card-header shop-header">
+              <div>
+                <h3>🛍️ 열매 상점</h3>
+                <p class="subtitle">열매 코인으로 신나는 쿠폰과 선물을 살 수 있어요!</p>
+              </div>
+              <div class="shop-balance-tag">
+                <span>보유 코인: </span>
+                <strong id="shop-student-coins">15</strong> 🍇
+              </div>
+            </div>
+            
+            <div class="shop-filter-bar">
+              <button class="filter-btn active" onclick="filterShop('all')">전체 보기</button>
+              <button class="filter-btn" onclick="filterShop('coupon')">🎫 학급 쿠폰</button>
+              <button class="filter-btn" onclick="filterShop('item')">🎁 선물/물건</button>
+            </div>
+
+            <div id="student-shop-grid" class="shop-grid">
+              <!-- JS will render shop items here -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ==================== TEACHER VIEW ==================== -->
+      <div id="view-teacher" class="view-section">
+        
+        <div class="teacher-dashboard-header">
+          <div>
+            <h2>👩‍🏫 열매반 교사 관리 대시보드</h2>
+            <p class="subtitle">7명 학생들의 코인, 레벨, 1인 1역, 상점 요청을 한번에 관리하세요.</p>
+          </div>
+          <div class="teacher-quick-actions">
+            <button class="btn-primary btn-pulse" onclick="openBulkCoinModal()">
+              🎁 전체 학생에게 코인 지급
+            </button>
+            <button class="btn-secondary" onclick="openAddMissionModal()">
+              ➕ 오늘 미션 등록
+            </button>
+          </div>
+        </div>
+
+        <!-- Teacher Dashboard Tabs -->
+        <div class="tab-navigation teacher-tabs">
+          <button class="tab-btn active" onclick="switchTeacherSubTab('students')">👧👦 전체 학생 현황 (화폐/레벨)</button>
+          <button class="tab-btn" onclick="switchTeacherSubTab('roles')">👑 1인 1역 배정</button>
+          <button class="tab-btn" onclick="switchTeacherSubTab('missions')">🌟 오늘의 미션 관리</button>
+          <button class="tab-btn" onclick="switchTeacherSubTab('requests')">
+            🛍️ 구매 요청 승인 
+            <span id="pending-requests-badge" class="badge-count">0</span>
+          </button>
+          <button class="tab-btn" onclick="switchTeacherSubTab('manage-shop')">⚙️ 상점 상품 관리</button>
+        </div>
+
+        <!-- Teacher Tab 1: Student List & Coin Multi-Action -->
+        <div id="teacher-subtab-students" class="subtab-content active">
+          <div id="teacher-students-grid" class="teacher-students-grid">
+            <!-- JS will render 7 student cards here -->
+          </div>
+        </div>
+
+        <!-- Teacher Tab 2: 1인 1역 Management -->
+        <div id="teacher-subtab-roles" class="subtab-content">
+          <div class="card">
+            <div class="card-header flex-between">
+              <div>
+                <h3>👑 1인 1역 역할 배정</h3>
+                <p class="subtitle">열매반 7명 어린이들의 역할을 지정해 주세요.</p>
+              </div>
+              <button class="btn-accent" onclick="randomizeRoles()">
+                🎲 역할 자동 섞기 (랜덤)
+              </button>
+            </div>
+            <div class="card-body">
+              <div id="teacher-roles-list" class="roles-assignment-grid">
+                <!-- JS will render role assigners for 7 students -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Tab 3: Daily Missions -->
+        <div id="teacher-subtab-missions" class="subtab-content">
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>🌟 오늘의 학급 미션 목록</h3>
+              <button class="btn-primary" onclick="openAddMissionModal()">➕ 새 미션 추가</button>
+            </div>
+            <div class="card-body">
+              <ul id="teacher-missions-list" class="teacher-missions-list">
+                <!-- JS will render mission items -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Tab 4: Purchase Request Approvals -->
+        <div id="teacher-subtab-requests" class="subtab-content">
+          <div class="card">
+            <div class="card-header">
+              <h3>🛍️ 학생 상점 구매 대기 목록</h3>
+              <p class="subtitle">학생들이 쿠폰이나 물건을 구매 신청하면 여기서 확인 후 승인해 주세요.</p>
+            </div>
+            <div class="card-body">
+              <div id="teacher-requests-list" class="requests-list">
+                <!-- JS will render purchase requests -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Tab 5: Manage Shop Items -->
+        <div id="teacher-subtab-manage-shop" class="subtab-content">
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>⚙️ 상점 물건 및 쿠폰 추가/관리</h3>
+              <button class="btn-primary" onclick="openAddShopItemModal()">➕ 새 상품 등록</button>
+            </div>
+            <div class="card-body">
+              <div id="teacher-shop-items-grid" class="shop-grid">
+                <!-- JS will render shop items with delete/edit -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Coin Give/Deduct Modal -->
+  <div id="modal-coin" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-coin-title">🍇 화폐 지급 / 차감</h3>
+        <button class="btn-close" onclick="closeModal('modal-coin')">✖</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-coin-student-name" class="modal-target-student">김열매 어린이</p>
+
+        <div class="form-group">
+          <label>지급 / 차감 선택</label>
+          <div class="type-toggle-group">
+            <button id="coin-type-add" class="toggle-btn active" onclick="setCoinActionType('add')">➕ 지급 (칭찬/보상)</button>
+            <button id="coin-type-sub" class="toggle-btn" onclick="setCoinActionType('sub')">➖ 차감 (규칙 미준수)</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>수량 선택 (🍇 코인)</label>
+          <div class="quick-amount-group">
+            <button class="btn-amount" onclick="setCoinAmount(1)">+1</button>
+            <button class="btn-amount" onclick="setCoinAmount(3)">+3</button>
+            <button class="btn-amount" onclick="setCoinAmount(5)">+5</button>
+            <button class="btn-amount" onclick="setCoinAmount(10)">+10</button>
+          </div>
+          <input type="number" id="coin-amount-input" class="form-control" value="1" min="1" max="100">
+        </div>
+
+        <div class="form-group">
+          <label>지급 / 차감 사유</label>
+          <div class="quick-reason-tags">
+            <button class="tag-btn" onclick="setCoinReason('친구 도와주기 🤝')">친구 도움 🤝</button>
+            <button class="tag-btn" onclick="setCoinReason('정리정돈 잘해요 ✨')">정리 잘함 ✨</button>
+            <button class="tag-btn" onclick="setCoinReason('발표 멋져요 👏')">멋진 발표 👏</button>
+            <button class="tag-btn" onclick="setCoinReason('미션 완수 🌟')">미션 완수 🌟</button>
+            <button class="tag-btn" onclick="setCoinReason('규칙 지키기 😇')">규칙 지킴 😇</button>
+          </div>
+          <input type="text" id="coin-reason-input" class="form-control" placeholder="사유를 입력하거나 위 태그를 누르세요">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-coin')">취소</button>
+        <button class="btn-primary" onclick="submitCoinTransaction()">확인 적용</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Bulk Coin Give Modal -->
+  <div id="modal-bulk-coin" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎁 열매반 전체 학생 코인 일괄 지급</h3>
+        <button class="btn-close" onclick="closeModal('modal-bulk-coin')">✖</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-target-student">열매반 어린이 7명 전체에게 지급합니다.</p>
+
+        <div class="form-group">
+          <label>지급 수량 (🍇 코인)</label>
+          <div class="quick-amount-group">
+            <button class="btn-amount" onclick="setBulkCoinAmount(1)">+1</button>
+            <button class="btn-amount" onclick="setBulkCoinAmount(3)">+3</button>
+            <button class="btn-amount" onclick="setBulkCoinAmount(5)">+5</button>
+          </div>
+          <input type="number" id="bulk-coin-amount-input" class="form-control" value="3" min="1" max="50">
+        </div>
+
+        <div class="form-group">
+          <label>지급 사유</label>
+          <input type="text" id="bulk-coin-reason-input" class="form-control" value="열매반 전체 칭찬 보상! 👏🌟">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-bulk-coin')">취소</button>
+        <button class="btn-primary" onclick="submitBulkCoin()">전원에게 칭찬 코인 보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add Mission Modal -->
+  <div id="modal-mission" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🌟 오늘의 학급 미션 추가</h3>
+        <button class="btn-close" onclick="closeModal('modal-mission')">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>미션 제목</label>
+          <input type="text" id="mission-title-input" class="form-control" placeholder="예: 신발장에 신발 가지런히 정리하기">
+        </div>
+        <div class="form-group">
+          <label>보상 코인 수량</label>
+          <input type="number" id="mission-reward-input" class="form-control" value="2" min="1" max="20">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-mission')">취소</button>
+        <button class="btn-primary" onclick="submitAddMission()">미션 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Add Shop Item Modal -->
+  <div id="modal-shop-item" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🛍️ 상점 새 상품 등록</h3>
+        <button class="btn-close" onclick="closeModal('modal-shop-item')">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>상품 카테고리</label>
+          <select id="shop-item-type" class="form-control">
+            <option value="coupon">🎫 학급 쿠폰</option>
+            <option value="item">🎁 선물/물건</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>아이콘/이모지</label>
+          <input type="text" id="shop-item-icon" class="form-control" placeholder="예: 🎟️, ✏️, 🧸" value="🎁">
+        </div>
+        <div class="form-group">
+          <label>상품 이름</label>
+          <input type="text" id="shop-item-name" class="form-control" placeholder="예: 원하는 자리에 앉기 쿠폰">
+        </div>
+        <div class="form-group">
+          <label>가격 (🍇 열매 코인)</label>
+          <input type="number" id="shop-item-price" class="form-control" value="15" min="1">
+        </div>
+        <div class="form-group">
+          <label>상품 설명</label>
+          <input type="text" id="shop-item-desc" class="form-control" placeholder="예: 하루 동안 친한 친구 옆자리에 앉아요!">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-shop-item')">취소</button>
+        <button class="btn-primary" onclick="submitAddShopItem()">상품 추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Level Up Celebration Popup -->
+  <div id="modal-levelup" class="modal-overlay celebration-overlay">
+    <div class="celebration-card animate-bounce">
+      <div class="levelup-stars">✨ 🌟 ⭐ 🌟 ✨</div>
+      <h2 class="levelup-title">LEVEL UP!</h2>
+      <div id="levelup-avatar" class="levelup-avatar">🍇</div>
+      <p id="levelup-student-name" class="levelup-student">김열매 어린이</p>
+      <div id="levelup-new-level" class="levelup-badge">Lv.2 정복!</div>
+      <p class="levelup-desc">축하해요! 열매반 최고 멋쟁이로 한 발짝 더 성장했어요! 🎉</p>
+      <button class="btn-large btn-accent" onclick="closeModal('modal-levelup')">신나요! 🥳</button>
+    </div>
+  </div>
+
+  <!-- JS Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
